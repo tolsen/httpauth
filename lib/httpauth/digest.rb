@@ -292,6 +292,14 @@ module HTTPAuth
         credentials.update_from_challenge! options
         credentials
       end
+
+      def self.load(filename, options={})
+        h = nil
+        File.open(filename, 'r') do |f|
+          h = Marshal.load f
+        end
+        new h, options
+      end
       
       # Create a new instance.
       #
@@ -388,6 +396,13 @@ module HTTPAuth
         end
         @h[:response] = Utils.calculate_digest(@h, @s, :request)
       end
+
+      def dump_sans_creds(filename)
+        File.open(filename, 'w') do |f|
+          Marshal.dump(Utils.filter_h_on(@h, [:username, :realm, :nonce, :algorithm, :cnonce, :opaque, :qop, :nc]), f)
+        end
+      end
+      
     end
     
     # The Challenge class handlers the WWW-Authenticate header. The WWW-Authenticate header is sent by a server when
